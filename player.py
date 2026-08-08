@@ -11,6 +11,10 @@ class Player:
         self.width = 64
         self.height = 64
 
+      # Screen Size Configuration
+        self.screen_width = 800
+        self.screen_height = 600
+
       # Primary hit-box used by our team for boundary and object collisions
         self.rect = pygame.Rect(self.pos.x, self.pos.y,
                                 self.width, self.height)
