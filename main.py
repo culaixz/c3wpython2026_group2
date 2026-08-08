@@ -1,7 +1,7 @@
 import pygame
 # Make constants
-WIDTH = 720
-HEIGHT = 720
+WIDTH = 800
+HEIGHT = 600
 FPS = 30
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
