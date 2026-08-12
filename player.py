@@ -146,6 +146,10 @@ class Player:
         
         screen.blit(sprite_to_draw, self.rect)
 
+# =====================================================================
+# STANDALONE SOLO TESTING ENVIRONMENT BLOCK
+# =====================================================================
+
 if __name__ == "__main__":
     import sys
     pygame.init()
