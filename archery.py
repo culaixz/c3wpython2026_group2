@@ -6,13 +6,13 @@ HEART_GAP = 5
 
 
 def update_arrows(arrow_list, maze_walls, player1, player2):
-    """
-    Moves arrows and handles:
-    - Arrow disappearing when it hits a maze wall
-    - Arrow disappearing when it hits a player
-    - Player health damage
-    - Detecting Game Over
-    """
+    
+    #Moves arrows and handles:
+    #Arrow disappearing when it hits a maze wall
+    #Arrow disappearing when it hits a player
+    #Player health damage
+    #Detecting Game Over
+    
 
     for arrow in arrow_list[:]:
         arrow.update()
