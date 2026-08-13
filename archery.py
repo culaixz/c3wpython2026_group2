@@ -46,7 +46,7 @@ def update_arrows(arrow_list, maze_walls, player1, player2):
 
 
 def draw_hearts(screen, player, x, y, player_name):
-    """Draws one heart for each health point."""
+    #Draws one heart for each health point
 
     font = pygame.font.Font(None, 26)
     label = font.render(player_name, True, (255, 255, 255))
@@ -62,7 +62,7 @@ def draw_hearts(screen, player, x, y, player_name):
 
 
 def draw_heart(screen, x, y, size, filled=True):
-    """Draws a heart without requiring another image file."""
+    #Draws a heart without requiring another image file
 
     if filled:
         color = (255, 50, 70)
@@ -126,7 +126,7 @@ def draw_game_over(screen, player1, player2):
     screen.blit(result_text, result_rect)
 
     hint = info_font.render(
-        "Press ESC to quit",
+        #Press ESC to quit
         True,
         (220, 220, 220)
     )
