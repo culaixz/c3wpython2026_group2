@@ -1,4 +1,6 @@
 import pygame
+import players
+
 # Make constants
 WIDTH = 720
 HEIGHT = 720
@@ -12,6 +14,7 @@ pygame.mixer.init() # sounds
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("My game")
 clock = pygame.time.Clock()
+player = players.Player(200,100)
 running = True
 while running:
     # Clock
@@ -21,9 +24,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    
     # Drawing
-    screen.fill(color=BLUE) # drawing the background
+    player.update()
+
+    screen.fill(color=BLUE)
+    player.draw(screen) # drawing the background
     
     pygame.display.flip()
 # quit the game after the loop exits
