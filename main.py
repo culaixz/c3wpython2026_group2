@@ -1,5 +1,5 @@
 import pygame
-import players
+import players 
 
 # Make constants
 WIDTH = 720
@@ -13,7 +13,7 @@ BLUE = (0, 0, 255)
 pygame.init()
 pygame.mixer.init() # sounds
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("My game")
+pygame.display.set_caption("Untitled Archery Game")
 clock = pygame.time.Clock()
 
 p1 = players.Player(100, 300, player_num=1)
