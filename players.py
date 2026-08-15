@@ -43,7 +43,6 @@ class Arrow:
                 self.image.fill((130, 150, 255), special_flags=pygame.BLEND_RGB_MULT)
         elif self.shooter_num == 2:
             if self.damage == 3:
-                # MAX CHARGE VISUAL EFFECTS: Flashes blinding blazing yellow-orange-red
                 self.image.fill((255, 200, 100), special_flags=pygame.BLEND_RGB_MULT)
             else:
                 self.image.fill((255, 100, 100), special_flags=pygame.BLEND_RGB_MULT)
@@ -82,10 +81,10 @@ class Player:
         # Charging states and timers
         self.is_charging = False
         self.charge_frame = 0         
-        self.charge_speed = 150     
+        self.charge_speed = 150       # Slowed down slightly so players can intentionally time their charge tiers
         self.charge_timer = pygame.time.get_ticks()
 
-        self.shoot_cooldown = 400  
+        self.shoot_cooldown = 600  
         self.last_shot = pygame.time.get_ticks()
 
         self.idle_cooldown = 320
@@ -94,6 +93,11 @@ class Player:
 
         # Load walking and breathing sprite sheets
         self.idle_animations, self.walk_animations = self._load_and_slice_assets()
+        
+        # Reload status warning trackers
+        self.reload_popup_timer = 0       # Tracks how long the popup stays visible
+        self.reload_font = pygame.font.SysFont("Courier New", 16, bold=True)
+
         
         # Loads the 4 progressive bow frames
         self.bow_frames = []
@@ -168,7 +172,7 @@ class Player:
         direction = pygame.math.Vector2(0, 0)
         attack_key_held = False
         
-        # Split inputs: Player 1 = WASD(movement)/Space(attack/hold to charge attack), Player 2 = Arrows(movement)/RightCtrl(attack/hold to charge attack)
+        # Captures separate keyboard direction tracks
         if self.player_num == 1:
             if keys[pygame.K_a]:   direction.x = -1; self.current_dir = "left"
             elif keys[pygame.K_d]: direction.x = 1;  self.current_dir = "right"
@@ -182,30 +186,48 @@ class Player:
             elif keys[pygame.K_DOWN]:  direction.y = 1;  self.current_dir = "down"
             if keys[pygame.K_RCTRL] or keys[pygame.K_RETURN]: attack_key_held = True
         
-        # Manages charging fram progression while attack button is held down
-        if attack_key_held and (now - self.last_shot >= self.shoot_cooldown):
-            self.is_moving = False
-            if not self.is_charging:
-                self.is_charging = True
-                self.charge_frame = 0
-                self.charge_timer = now
-            else:
-                if now - self.charge_timer >= self.charge_speed:
-                    self.charge_timer = now
-                    self.charge_frame = min(3, self.charge_frame + 1)
+        # Runtime physics vector (zero delay)
+        if direction.length() > 0:
+            self.is_moving = True
+            self.pos += direction * 4
+
+            if self.pos.x < 0: self.pos.x = 0
+            elif self.pos.x > self.screen_width - self.rect.width: self.pos.x = self.screen_width - self.rect.width
+            if self.pos.y < 0: self.pos.y = 0
+            elif self.pos.y > self.screen_height - self.rect.height: self.pos.y = self.screen_height - self.rect.height
+
+            self.rect.topleft = (self.pos.x, self.pos.y)
         else:
-            # Release trigger event: Spawns arrow and applies double damage on full stretch
+            self.is_moving = False
+
+        # Independent combat system and re-arming timers
+        if attack_key_held:
+            # Checks if they are button spamming before weapon is re-armed
+            if now - self.last_shot < self.shoot_cooldown:
+                # Flash the short warning alert over their head (Lasts 400ms)
+                self.reload_popup_timer = now + 400
+            else:
+                # Weapon is fully reloaded
+                if not self.is_charging:
+                    self.is_charging = True
+                    self.charge_frame = 0
+                    self.charge_timer = now
+                else:
+                    if now - self.charge_timer >= self.charge_speed:
+                        self.charge_timer = now
+                        self.charge_frame = min(3, self.charge_frame + 1)
+        else:
+            # Discharge arrow project files
             if self.is_charging:
                 self.is_charging = False
                 self.last_shot = now
                 
-                # Check if the player held the bow until the maximum string stretch (Frame 3)
                 if self.charge_frame == 3:
-                    final_damage = 2    # Double Damage
-                    final_speed = 16    # Faster Speed
+                    final_damage = 2    # Double Damage when charged 
+                    final_speed = 16    
                 else:
-                    final_damage = 1    # Standard Snap-Shot Damage
-                    final_speed = 9     # Standard Snap-Shot Speed
+                    final_damage = 1    
+                    final_speed = 9     
                 
                 spawn_x = self.rect.centerx - 24
                 spawn_y = self.rect.centery - 24
@@ -220,28 +242,11 @@ class Player:
                 arrow_list.append(new_arrow)
                 self.charge_frame = 0
 
-            # Handles player walking movement and boundary layout limits
-            if direction.length() > 0:
-                self.is_moving = True
-                # HARDCODED CHARACTER VELOCITY: Balanced walking movement set to 4
-                self.pos += direction * 4
-
-                if self.pos.x < 0: self.pos.x = 0
-                elif self.pos.x > self.screen_width - self.rect.width: self.pos.x = self.screen_width - self.rect.width
-                if self.pos.y < 0: self.pos.y = 0
-                elif self.pos.y > self.screen_height - self.rect.height: self.pos.y = self.screen_height - self.rect.height
-
-                self.rect.topleft = (self.pos.x, self.pos.y)
-            else:
-                self.is_moving = False
-
-        # Cycles character frame sheet steps
+        # Cycle sprite walking/breathing animation frame ticks
         active_cooldown = self.walk_cooldown if self.is_moving else self.idle_cooldown
         if now - self.last_update >= active_cooldown:
             self.last_update = now
-            self.current_frame += 1
-            if self.current_frame >= 4:
-                self.current_frame = 0
+            self.current_frame = (self.current_frame + 1) % 4
 
     def draw(self, screen):
         if self.health <= 0:
@@ -260,7 +265,7 @@ class Player:
         center_x = self.rect.centerx
         center_y = self.rect.centery
 
-        # Renders weapons layered correctly with fine-tuned placement coordinates
+        # Render weapons layered correctly with fine-tuned placement coordinates
         if self.current_dir == "up":
             screen.blit(active_bow_texture, (center_x - 22, center_y - 24))
             screen.blit(sprite_to_draw, self.rect)
@@ -274,6 +279,18 @@ class Player:
             elif self.current_dir == "left":
                 flipped_bow = pygame.transform.flip(active_bow_texture, True, False)
                 screen.blit(flipped_bow, (center_x - 38, center_y + 2))
+
+        now = pygame.time.get_ticks()
+        if now < self.reload_popup_timer:
+            # Renders a reloading warning string centered over their coordinate box head line
+            reload_surf = self.reload_font.render("RELOADING...", True, (255, 60, 60))
+            
+            # Position calculations: centers it horizontally above their head box bounds
+            txt_x = self.rect.centerx - (reload_surf.get_width() // 2)
+            txt_y = self.rect.top - 25  # Floats 25 pixels straight above their head
+            
+            screen.blit(reload_surf, (txt_x, txt_y))
+
 
 # =====================================================================
 # STANDALONE SOLO TESTING ENVIRONMENT BLOCK
