@@ -97,7 +97,7 @@ def draw_heart(screen, x, y, size, filled=True):
 
 
 def draw_game_over(screen, player1, player2):
-    """Displays the Game Over screen."""
+    #Displays the Game Over screen
 
     overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     overlay.fill((0, 0, 0, 190))
@@ -138,7 +138,7 @@ def draw_game_over(screen, player1, player2):
 
 
 def game_over_event(event):
-    """Returns True if ESC is pressed on the Game Over screen."""
+    #Returns True if ESC is pressed on the Game Over screen
 
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_ESCAPE:
