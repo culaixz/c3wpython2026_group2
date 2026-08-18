@@ -159,9 +159,13 @@ class Player:
                     frame_walk.fill((255, 130, 130), special_flags=pygame.BLEND_RGB_MULT)
                 walk_pool[direction].append(frame_walk)
             
-        return idle_pool, walk_pool
-    
+            return idle_pool, walk_pool
+        
     def update(self, arrow_list):
+        # If the player is dead, completely kill all movement and shooting inputs
+        if self.health <= 0:
+            return
+            
         keys = pygame.key.get_pressed()
         now = pygame.time.get_ticks()   
 
@@ -194,12 +198,12 @@ class Player:
                     self.charge_timer = now
                     self.charge_frame = min(3, self.charge_frame + 1)
         else:
-            # Release trigger event: Spawns arrow and applies double damage on full stretch
+            # Releases trigger event: Spawns arrow and applies double damage on full stretch
             if self.is_charging:
                 self.is_charging = False
                 self.last_shot = now
                 
-                # Check if the player held the bow until the maximum string stretch (Frame 3)
+                # Checks if the player held the bow until the maximum string stretch (Frame 3)
                 if self.charge_frame == 3:
                     final_damage = 2    # Double Damage
                     final_speed = 16    # Faster Speed
@@ -223,7 +227,6 @@ class Player:
             # Handles player walking movement and boundary layout limits
             if direction.length() > 0:
                 self.is_moving = True
-                # HARDCODED CHARACTER VELOCITY: Balanced walking movement set to 4
                 self.pos += direction * 4
 
                 if self.pos.x < 0: self.pos.x = 0
