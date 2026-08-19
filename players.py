@@ -253,10 +253,21 @@ class Player:
             return  
 
         lookup_dir = "right" if self.current_dir == "left" else self.current_dir
+        
+        # Selects the active animation pool based on movement state
         if self.is_moving:
-            sprite_to_draw = self.walk_animations[lookup_dir][self.current_frame]
+            current_pool = self.walk_animations[lookup_dir]
         else:
-            sprite_to_draw = self.idle_animations[lookup_dir][self.current_frame]
+            current_pool = self.idle_animations[lookup_dir]
+
+        # If the list is empty, this creates a quick fallback surface to prevent a crash
+        if not current_pool:
+            fallback_surf = pygame.Surface((96, 96), pygame.SRCALPHA)
+            current_pool = [fallback_surf]
+
+        # This should ensure index never exceeds list length
+        safe_frame = self.current_frame % len(current_pool)
+        sprite_to_draw = current_pool[safe_frame]
 
         if self.current_dir == "left":
             sprite_to_draw = pygame.transform.flip(sprite_to_draw, True, False)
@@ -265,7 +276,6 @@ class Player:
         center_x = self.rect.centerx
         center_y = self.rect.centery
 
-        # Render weapons layered correctly with fine-tuned placement coordinates
         if self.current_dir == "up":
             screen.blit(active_bow_texture, (center_x - 22, center_y - 24))
             screen.blit(sprite_to_draw, self.rect)
@@ -282,13 +292,9 @@ class Player:
 
         now = pygame.time.get_ticks()
         if now < self.reload_popup_timer:
-            # Renders a reloading warning string centered over their coordinate box head line
             reload_surf = self.reload_font.render("RELOADING...", True, (255, 60, 60))
-            
-            # Position calculations: centers it horizontally above their head box bounds
             txt_x = self.rect.centerx - (reload_surf.get_width() // 2)
-            txt_y = self.rect.top - 25  # Floats 25 pixels straight above their head
-            
+            txt_y = self.rect.top - 25  
             screen.blit(reload_surf, (txt_x, txt_y))
 
 
