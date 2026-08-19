@@ -49,7 +49,6 @@ while running:
             is_game_over = archery.update_arrows(arrow_list, maze_walls, p1, p2)
 
         screen.fill(color=BLUE)
-
         p1.draw(screen)
         p2.draw(screen) 
 
@@ -65,7 +64,7 @@ while running:
 
         if is_game_over:
             archery.draw_game_over(screen, p1, p2)
-            
+
     else:
         themenu.draw(screen, mouse_pos)   
     pygame.display.flip()
