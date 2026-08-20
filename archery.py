@@ -125,7 +125,7 @@ def draw_game_over(screen, player1, player2):
     )
     screen.blit(result_text, result_rect)
 
-   hint = info_font.render(
+    hint = info_font.render(
     "Press ESC to quit",
     True,
     (220, 220, 220)
