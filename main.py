@@ -2,6 +2,7 @@ import pygame
 import players 
 import archery
 import menu
+import Collision
 
 # Make constants
 WIDTH = 720
@@ -22,8 +23,8 @@ themenu = menu.Menu(WIDTH, HEIGHT)
 p1 = players.Player(100, 300, player_num=1)
 p2 = players.Player(600, 300, player_num=2)
 arrow_list = []
-maze_walls = []
-is_game_over = archery.update_arrows(arrow_list, maze_walls, p1, p2)
+maze_walls = Collision.maze_walls
+is_game_over = False
 
 running = True
 while running:
@@ -48,7 +49,8 @@ while running:
             p2.update(arrow_list)
             is_game_over = archery.update_arrows(arrow_list, maze_walls, p1, p2)
 
-        screen.fill(color=BLUE)
+        background_img = pygame.image.load("NewestBGS.png").convert()
+        background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
         p1.draw(screen)
         p2.draw(screen) 
 
