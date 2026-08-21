@@ -41,8 +41,8 @@ class Menu:
         screen.fill(backgroundcolor)
 
         if self.currentstate == "inmenu":
-            titlepage = self.font.render("Archery " \
-            "Arena", True, color)
+            titlepage = self.font.render("Untitled " \
+            "Archery Game", True, color)
             titleclick = titlepage.get_rect(center=(self.width // 2, 100))
             screen.blit(titlepage, titleclick)
 
@@ -63,6 +63,9 @@ class Menu:
             text_rect = text_surf.get_rect(center=(self.width // 2, 290))
             screen.blit(text_surf, text_rect)
             text_surf = self.font.render("Riko Wells", True, color)
+            text_rect = text_surf.get_rect(center=(self.width // 2, 370))
+            screen.blit(text_surf, text_rect)
+            text_surf = self.font.render("Dwaino Goldison", True, color)
             text_rect = text_surf.get_rect(center=(self.width // 2, 370))
             screen.blit(text_surf, text_rect)
             back_surf, self.back_rect = draw_button("Back", self.font, self.width // 2, 500, mouse_pos)
