@@ -2,7 +2,7 @@ import pygame
 
 color = (0, 0, 0)
 hovercolor = (179, 217, 217)
-backgroundcolor = (255, 255, 255)
+backgroundcolor = (205,170,109)
 
 def draw_button(text_str, font, x, y, mouse_pos):
     text = font.render(text_str, True, color)
