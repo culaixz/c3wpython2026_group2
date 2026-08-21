@@ -20,10 +20,10 @@ class Arrow:
         # Loads arrow image asset safely
         try:
             self.image = pygame.image.load("arrow.png").convert_alpha()
-            self.image = pygame.transform.scale(self.image, (48, 48))
+            self.image = pygame.transform.scale(self.image, (24, 24))
         except pygame.error:
-            self.image = pygame.Surface((48, 48), pygame.SRCALPHA)
-            pygame.draw.rect(self.image, (220, 160, 90), (0, 20, 48, 8))
+            self.image = pygame.Surface((24, 24), pygame.SRCALPHA)
+            pygame.draw.rect(self.image, (220, 160, 90), (0, 10, 24, 4))
 
         # 4-Way angle rotation lock for the arrow sprite
         if self.dir_str == "right":
@@ -70,12 +70,17 @@ class Player:
         # Sprite sizes
         self.frame_w = 32
         self.frame_h = 32
-        self.scale_factor = 3.0     
+        self.scale_factor = 2.0     
 
         self.screen_width = 800
         self.screen_height = 600
 
-        self.current_dir = "down"
+        # Player 1 (Blue) spawns facing right, Player 2 (Red) spawns facing left
+        if self.player_num == 1:
+            self.current_dir = "right"
+        else:
+            self.current_dir = "left"
+
         self.current_frame = 0
 
         # Charging states and timers
@@ -104,7 +109,7 @@ class Player:
         for i in range(4):
             try:
                 img = pygame.image.load(f"bow{i}.png").convert_alpha()
-                img = pygame.transform.scale(img, (32, 48))
+                img = pygame.transform.scale(img, (22, 32))
                 if self.player_num == 1:
                     img.fill((130, 150, 255), special_flags=pygame.BLEND_RGB_MULT)
                 elif self.player_num == 2:
@@ -116,11 +121,13 @@ class Player:
                 else: fallback.fill((220, 40, 40))
                 self.bow_frames.append(fallback)
 
-        self.rect = pygame.Rect(
-            self.pos.x, self.pos.y, 
-            int(self.frame_w * self.scale_factor), 
-            int(self.frame_h * self.scale_factor)
-        )
+        # Tight box that fits the visible character pixels 
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, 40, 48)
+
+        # Short hitbox sitting directly at the player's feet
+        self.feet_rect = pygame.Rect(self.pos.x, self.pos.y + 24, 40, 24)
+
+
 
     def _load_and_slice_assets(self):
         try:
@@ -197,6 +204,8 @@ class Player:
             elif self.pos.y > self.screen_height - self.rect.height: self.pos.y = self.screen_height - self.rect.height
 
             self.rect.topleft = (self.pos.x, self.pos.y)
+            self.feet_rect.topleft = (self.pos.x, self.pos.y + 24) # Keeps the foot box at the bottom
+
         else:
             self.is_moving = False
 
@@ -223,19 +232,30 @@ class Player:
                 self.last_shot = now
                 
                 if self.charge_frame == 3:
-                    final_damage = 2    # Double Damage when charged 
+                    final_damage = 2    # Double Damage when charged (minus 2 health)
                     final_speed = 16    
                 else:
                     final_damage = 1    
                     final_speed = 9     
+                      
+                # Anchors the arrow spawning origin directly to the top-left of the player box
+                spawn_x = self.rect.x
+                spawn_y = self.rect.y
                 
-                spawn_x = self.rect.centerx - 24
-                spawn_y = self.rect.centery - 24
-                
-                if self.current_dir == "up": spawn_y -= 15 
-                elif self.current_dir == "down": spawn_y += 15 
-                elif self.current_dir == "right": spawn_x += 15; spawn_y += 10 
-                elif self.current_dir == "left": spawn_x -= 15; spawn_y += 10 
+                # Calibrates the arrow flight paths to line up with the bow pixels
+                if self.current_dir == "up": 
+                    spawn_x += 10  
+                    spawn_y += 2   
+                elif self.current_dir == "down": 
+                    spawn_x += 10  
+                    spawn_y += 26  
+                elif self.current_dir == "right": 
+                    spawn_x += 24
+                    spawn_y += 18 
+                elif self.current_dir == "left": 
+                    spawn_x -= 12
+                    spawn_y += 18 
+
                 
                 new_arrow = Arrow(spawn_x, spawn_y, self.current_dir, self.player_num, final_damage)
                 new_arrow.speed = final_speed
@@ -277,18 +297,22 @@ class Player:
         center_y = self.rect.centery
 
         if self.current_dir == "up":
-            screen.blit(active_bow_texture, (center_x - 22, center_y - 24))
+            # Centers the bow horizontally on the back, lowers it onto the torso
+            screen.blit(active_bow_texture, (self.rect.x + 21, self.rect.y + 12))
             screen.blit(sprite_to_draw, self.rect)
         elif self.current_dir == "down":
             screen.blit(sprite_to_draw, self.rect)
-            screen.blit(active_bow_texture, (center_x - 16, center_y - 4))
+            # Centers the bow horizontally on the chest, lowers it onto the torso
+            screen.blit(active_bow_texture, (self.rect.x + 21, self.rect.y + 24))
+
         else:
             screen.blit(sprite_to_draw, self.rect)
             if self.current_dir == "right":
-                screen.blit(active_bow_texture, (center_x + 6, center_y + 2))
+                screen.blit(active_bow_texture, (self.rect.x + 28, self.rect.y + 24))
             elif self.current_dir == "left":
                 flipped_bow = pygame.transform.flip(active_bow_texture, True, False)
-                screen.blit(flipped_bow, (center_x - 38, center_y + 2))
+                screen.blit(flipped_bow, (self.rect.x + 14, self.rect.y + 24))
+
 
         now = pygame.time.get_ticks()
         if now < self.reload_popup_timer:
