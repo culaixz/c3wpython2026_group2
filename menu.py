@@ -41,8 +41,8 @@ class Menu:
         screen.fill(backgroundcolor)
 
         if self.currentstate == "inmenu":
-            titlepage = self.font.render("Untitled " \
-            "Archery Game", True, color)
+            titlepage = self.font.render("Archery " \
+            "Arena", True, color)
             titleclick = titlepage.get_rect(center=(self.width // 2, 100))
             screen.blit(titlepage, titleclick)
 
