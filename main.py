@@ -4,6 +4,8 @@ import players
 import archery
 import menu
 import Collision 
+import audio
+
 
 WIDTH = 800  
 HEIGHT = 600
@@ -13,6 +15,7 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 pygame.init()
+music_player = audio.AudioManager()
 pygame.mixer.init() 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Archery Arena")
@@ -50,6 +53,8 @@ while running:
             running = False
 
     if themenu.currentstate == "start":
+        music_player.play_gameplay_music()
+
         if not is_game_over:
 
             p1_old_x, p1_old_y = p1.pos.x, p1.pos.y
@@ -116,12 +121,15 @@ while running:
         archery.draw_hearts(screen, p2, 450, 35, "Player 2")
 
         if is_game_over:
+            music_player.stop_music()
             archery.draw_game_over(screen, p1, p2)
 
     else:
+        music_player.play_menu_music()
         themenu.draw(screen, mouse_pos)   
 
     pygame.display.flip()
 
 pygame.quit()
 sys.exit()
+
